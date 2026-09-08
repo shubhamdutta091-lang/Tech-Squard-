@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>🌑 MOON VR: MISSION ASTRONAUT — “THE LAST SIGNAL”</title>
+  <meta name="description" content="Cinematic interactive VR astronaut simulation with Adaptive AI Mission Director. Your mission. Your consequences." />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+  <!-- Core Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Three.js Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+  <!-- WebGL / WebXR Canvas Container -->
+  <div id="canvas-container"></div>
+
+  <!-- Desktop 6DOF Center Reticle -->
+  <div id="center-reticle"></div>
+
+  <!-- Helmet Visor HUD Overlay -->
+  <div id="helmet-hud-overlay">
+    <div class="visor-frame"></div>
+
+    <!-- Top HUD Telemetry Bar -->
+    <header class="hud-top-bar">
+      <div class="hud-mission-badge">
+        <span class="badge-icon">🌑</span>
+        <div>
+          <div class="badge-title">MOON VR : MISSION ASTRONAUT</div>
+          <div class="badge-subtitle">“THE LAST SIGNAL” // SOLO TRAINEE</div>
+        </div>
+      </div>
+
+      <div class="hud-phase-indicator">
+        <div class="phase-step" id="hud-phase-step">PHASE 01 / 08</div>
+        <div class="phase-name" id="hud-phase-name">PRE-FLIGHT & LAUNCH VERIFICATION</div>
+      </div>
+
+      <div class="hud-biometrics">
+        <div class="biometric-metric">
+          <span class="metric-label">HEART RATE</span>
+          <span class="metric-val" id="hud-bpm">72 <span class="pulse-dot"></span></span>
+        </div>
+        <div class="biometric-metric">
+          <span class="metric-label">SUIT O2</span>
+          <span class="metric-val" id="hud-o2">100%</span>
+        </div>
+        <div class="biometric-metric">
+          <span class="metric-label">CABIN PRESS</span>
+          <span class="metric-val" id="hud-press">101.3 kPa</span>
+        </div>
+        <button id="vr-enter-btn" title="Launch Immersive WebXR on Meta Quest / Headset">🥽 ENTER VR</button>
+      </div>
+    </header>
+
+    <!-- Center Stage: Dynamic Objectives, Emergencies, Dilemmas -->
+    <main id="hud-center-stage">
+      <div id="hud-action-area"></div>
+    </main>
+
+    <!-- Cockpit Quick-Action Control Dock -->
+    <div id="quick-control-dock">
+      <div class="dock-header">
+        <span class="dock-header-label">COCKPIT CONSOLE CONTROLS</span>
+        <button id="btn-reset-view" class="dock-reset-btn" title="Re-center camera on center console (Hotkey: C)">🎯 RE-CENTER VIEW [C]</button>
+      </div>
+      <div class="dock-buttons-grid">
+        <button class="dock-btn" id="dock-btn-o2" data-switch="o2" title="Toggle Primary Life Support (Hotkey: 1)">
+          <span class="dock-key">1</span>
+          <span class="dock-led" id="led-o2"></span>
+          <span class="dock-label">O2 LIFE SUPPORT</span>
+        </button>
+        <button class="dock-btn" id="dock-btn-comms" data-switch="comms" title="Toggle Ground Uplink (Hotkey: 2)">
+          <span class="dock-key">2</span>
+          <span class="dock-led" id="led-comms"></span>
+          <span class="dock-label">COMMS UPLINK</span>
+        </button>
+        <button class="dock-btn" id="dock-btn-nav" data-switch="nav" title="Toggle Lunar Navigation (Hotkey: 3)">
+          <span class="dock-key">3</span>
+          <span class="dock-led" id="led-nav"></span>
+          <span class="dock-label">NAV COMPUTER</span>
+        </button>
+        <button class="dock-btn" id="dock-btn-power" data-switch="power" title="Toggle Power Bus (Hotkey: 4)">
+          <span class="dock-key">4</span>
+          <span class="dock-led" id="led-power"></span>
+          <span class="dock-label">POWER BUS</span>
+        </button>
+        <button class="dock-btn" id="dock-btn-cargo" data-switch="cargo" title="Toggle Magnetic Locks (Hotkey: 5)">
+          <span class="dock-key">5</span>
+          <span class="dock-led" id="led-cargo"></span>
+          <span class="dock-label">CARGO LOCKS</span>
+        </button>
+        <button class="dock-btn dock-btn-ignition" id="dock-btn-ignition" title="Pull Throttle Lever (Hotkey: SPACE)">
+          <span class="dock-key">SPACE</span>
+          <span class="dock-label">🚀 PULL IGNITION</span>
+        </button>
+        <!-- Dynamic Emergency Action Buttons -->
+        <button class="dock-btn dock-btn-emergency" id="dock-btn-bypass" title="Engine 2 Emergency Bypass (Hotkey: E)" style="display: none;">
+          <span class="dock-key">E</span>
+          <span class="dock-label">⚠️ ENG 2 BYPASS</span>
+        </button>
+        <button class="dock-btn dock-btn-tool" id="dock-btn-sealant" title="Equip Hull Sealant Tool (Hotkey: F)" style="display: none;">
+          <span class="dock-key">F</span>
+          <span class="dock-label">🔧 EQUIP SEALANT</span>
+        </button>
+        <button class="dock-btn dock-btn-patch" id="dock-btn-patch" title="Apply Sealant Patch (Hotkey: R)" style="display: none;">
+          <span class="dock-key">R</span>
+          <span class="dock-label">🩹 SEAL BREACH</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Bottom Telemetry & AI Director Thought Feed -->
+    <footer class="hud-bottom-bar">
+      <div class="ai-director-status-box">
+        <span class="ai-status-tag">🧠 ADAPTIVE MISSION AI DIRECTOR</span>
+        <div id="ai-live-thought" class="ai-thought-text">MONITORING ASTRONAUT PREPARATION DISCIPLINE...</div>
+      </div>
+
+      <div id="interaction-prompt">[CLICK TO ENGAGE]</div>
+    </footer>
+  </div>
+
+  <!-- Floating HUD Toast Notification -->
+  <div id="hud-notification" class="hud-notif"></div>
+
+  <!-- Audio & WebXR Initiation Prompt Modal -->
+  <div id="audio-modal">
+    <div class="audio-prompt-card">
+      <div class="badge-icon" style="font-size: 40px; margin-bottom: 12px;">🌑</div>
+      <h1 class="audio-prompt-title">MOON VR — MISSION: ASTRONAUT</h1>
+      <h2 style="font-family: var(--font-display); font-size: 16px; color: var(--cyan-primary); margin-bottom: 16px; letter-spacing: 2px;">“THE LAST SIGNAL”</h2>
+      <p class="audio-prompt-sub">
+        <strong>“YOUR MISSION. YOUR CONSEQUENCES.”</strong><br><br>
+        You are a trainee astronaut performing your first solo lunar orbital mission.
+        The system continuously observes your behavior, reaction times, mistakes, resource management, and risk tolerance.<br><br>
+        No two playthroughs are the same. Physical 3D cockpit interaction enabled.
+      </p>
+      <button class="hud-action-btn" id="btn-start-simulation" style="font-size: 14px; padding: 15px 30px;">
+        INITIALIZE MISSION & LIFE SUPPORT
+      </button>
+      <div style="font-family: var(--font-mono); font-size: 11px; color: #64748b; margin-top: 14px;">
+        DESKTOP: Drag mouse to look around | Left-click switches & levers<br>
+        VR HEADSET: Click [ENTER VR] button on HUD after launch
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 8: Comprehensive Astronaut Debrief & Causal Memory Graph Modal -->
+  <div id="debrief-modal">
+    <div class="debrief-content">
+      <header class="debrief-header">
+        <div class="debrief-title-small">NASA / LUNAR COMMAND ASTRONAUT CORPS</div>
+        <h2 class="debrief-main-title">ASTRONAUT PERFORMANCE & PSYCHOLOGICAL REPORT</h2>
+        <div style="font-family: var(--font-mono); font-size: 12px; color: #94a3b8;">
+          MISSION EVALUATION MATRIX // FLIGHT LOG: APOLLO-X-SOLO
+        </div>
+      </header>
+
+      <!-- Persona Badge & Diagnosis -->
+      <section class="debrief-persona-box">
+        <div class="persona-tag">PSYCHO-TECHNICAL DESIGNATION</div>
+        <div class="persona-title" id="debrief-persona-title">VANGUARD COMMANDER</div>
+        <div class="persona-summary" id="debrief-summary">
+          You demonstrated exceptional composure and meticulous pre-flight discipline...
+        </div>
+      </section>
+
+      <!-- 6-Axis Core Metrics -->
+      <section class="metrics-grid">
+        <div class="metric-bar-group">
+          <div class="metric-bar-header">
+            <span>DECISION MAKING</span>
+            <span id="metric-decisions">91</span>
+          </div>
+          <div class="metric-bar-track"><div class="metric-bar-fill" id="bar-decisions" style="width: 91%"></div></div>
+        </div>
+
+        <div class="metric-bar-group">
+          <div class="metric-bar-header">
+            <span>STRESS MANAGEMENT</span>
+            <span id="metric-stress">74</span>
+          </div>
+          <div class="metric-bar-track"><div class="metric-bar-fill" id="bar-stress" style="width: 74%"></div></div>
+        </div>
+
+        <div class="metric-bar-group">
+          <div class="metric-bar-header">
+            <span>TECHNICAL SKILLS</span>
+            <span id="metric-tech">88</span>
+          </div>
+          <div class="metric-bar-track"><div class="metric-bar-fill" id="bar-tech" style="width: 88%"></div></div>
+        </div>
+
+        <div class="metric-bar-group">
+          <div class="metric-bar-header">
+            <span>RISK MANAGEMENT</span>
+            <span id="metric-risk">62</span>
+          </div>
+          <div class="metric-bar-track"><div class="metric-bar-fill" id="bar-risk" style="width: 62%"></div></div>
+        </div>
+
+        <div class="metric-bar-group">
+          <div class="metric-bar-header">
+            <span>ATTENTION & DISCIPLINE</span>
+            <span id="metric-attention">95</span>
+          </div>
+          <div class="metric-bar-track"><div class="metric-bar-fill" id="bar-attention" style="width: 95%"></div></div>
+        </div>
+
+        <div class="metric-bar-group">
+          <div class="metric-bar-header">
+            <span>RESOURCE CONSERVATION</span>
+            <span id="metric-resources">71</span>
+          </div>
+          <div class="metric-bar-track"><div class="metric-bar-fill" id="bar-resources" style="width: 71%"></div></div>
+        </div>
+      </section>
+
+      <!-- Persistent Causal Memory Graph -->
+      <section class="memory-graph-section">
+        <div id="memory-graph-content"></div>
+      </section>
+
+      <!-- Replayability Trigger -->
+      <footer style="margin-top: 30px; text-align: center;">
+        <button class="hud-action-btn" id="btn-replay-mission" style="max-width: 400px; margin: 0 auto;">
+          🔄 PLAY AGAIN (GENERATE NEW MISSION SEED)
+        </button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Subsystems -->
+  <script src="audioEngine.js"></script>
+  <script src="aiDirector.js"></script>
+  <script src="cockpitScene.js"></script>
+  <script src="memoryGraph.js"></script>
+  <script src="missionFlow.js"></script>
+
+  <!-- Application Bootstrap -->
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      // Connect AI thought logger to HUD
+      const thoughtEl = document.getElementById("ai-live-thought");
+      if (window.aiDirector) {
+        window.aiDirector.onAILog((msg, severity) => {
+          if (thoughtEl) {
+            thoughtEl.textContent = msg;
+            thoughtEl.style.color = severity === "alert" ? "#ef4444" : (severity === "warning" ? "#f59e0b" : "#00e5ff");
+          }
+        });
+      }
+
+      // HUD Biometrics polling loop
+      setInterval(() => {
+        if (!window.aiDirector) return;
+        const bpmEl = document.getElementById("hud-bpm");
+        const o2El = document.getElementById("hud-o2");
+        const pressEl = document.getElementById("hud-press");
+
+        if (bpmEl && window.audioEngine) {
+          bpmEl.innerHTML = `${Math.round(window.audioEngine.heartbeatBpm)} <span class="pulse-dot"></span>`;
+        }
+        if (o2El) {
+          o2El.textContent = `${Math.round(window.aiDirector.telemetry.oxygenLevel)}%`;
+        }
+        if (pressEl) {
+          pressEl.textContent = `${window.aiDirector.telemetry.cabinPressure.toFixed(1)} kPa`;
+        }
+      }, 500);
+
+      // Start Simulation on user click
+      const startBtn = document.getElementById("btn-start-simulation");
+      const audioModal = document.getElementById("audio-modal");
+
+      startBtn.addEventListener("click", () => {
+        audioModal.style.display = "none";
+
+        // 1. Initialize 3D Scene
+        window.cockpitScene.init();
+
+        // 2. Start Mission Flow
+        window.missionFlow.start();
+      });
+    });
+  </script>
+</body>
+</html>
